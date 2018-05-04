@@ -2,7 +2,7 @@
   "name": "kong-admin-api-client",
   "version": "0.0.1",
   "description": "Library to interact with the Kong Admin API.",
-  "main": "src/index.js",
+  "main": "src/client.js",
   "scripts": {
     "test": "mocha src/**/*.test.js"
   },
@@ -15,5 +15,16 @@
   "bugs": {
     "url": "https://github.com/troposhq/kong-admin-api-client/issues"
   },
-  "homepage": "https://github.com/troposhq/kong-admin-api-client#readme"
+  "homepage": "https://github.com/troposhq/kong-admin-api-client#readme",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "joi": "^13.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-plugin-import": "^2.11.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-react": "^7.7.0"
+  }
 }

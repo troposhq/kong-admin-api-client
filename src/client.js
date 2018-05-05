@@ -1,14 +1,14 @@
 const axios = require('axios');
 
-function Client(opts) {
-  if (!(this instanceof Client)) { return new Client(); }
+function Kong(opts) {
+  if (!(this instanceof Kong)) { return new Kong(); }
 
   this.adminAPIHost = opts.adminAPIHost || 'http://localhost';
   this.adminAPIPort = opts.adminAPIPort || '8001';
   this.kongAdminAPIURL = `${this.adminAPIHost}:${this.adminAPIPort}`;
 }
 
-Client.prototype.createConsumer = async function ({ username, customId }) {
+Kong.prototype.createConsumer = async function ({ username, customId }) {
   const consumerResult = await axios({
     method: 'POST',
     url: `${this.kongAdminAPIURL}/consumers`,
@@ -24,7 +24,7 @@ Client.prototype.createConsumer = async function ({ username, customId }) {
   return consumerResult;
 }
 
-Client.prototype.createJWTCredential = async function (consumerIDOrUsername) {
+Kong.prototype.createJWTCredential = async function (consumerIDOrUsername) {
   const credential = await axios({
     method: 'POST',
     url: `${this.kongAdminAPIURL}/consumers/${consumerIDOrUsername}/jwt`,
@@ -36,7 +36,7 @@ Client.prototype.createJWTCredential = async function (consumerIDOrUsername) {
   return credential;
 }
 
-Client.prototype.createService = async function ({
+Kong.prototype.addService = async function ({
   name,
   protocol,
   host,
@@ -59,4 +59,24 @@ Client.prototype.createService = async function ({
   return service;
 }
 
-module.exports = Client;
+Kong.prototype.addRoute = async function ({
+  protocols,
+  methods,
+  hosts,
+  paths,
+  strip_path,
+  preserve_host,
+  service,
+}) {
+  const service = await axios({
+    method: 'POST',
+    url: `${this.kongAdminAPIURL}/routes`,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }).then(x => x.data);
+
+  return service;
+}
+
+module.exports = Kong;

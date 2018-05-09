@@ -68,7 +68,7 @@ Kong.prototype.addRoute = async function ({
   preserve_host,
   service,
 }) {
-  const service = await axios({
+  const route = await axios({
     method: 'POST',
     url: `${this.kongAdminAPIURL}/routes`,
     headers: {
@@ -76,7 +76,7 @@ Kong.prototype.addRoute = async function ({
     },
   }).then(x => x.data);
 
-  return service;
+  return route;
 }
 
 module.exports = Kong;

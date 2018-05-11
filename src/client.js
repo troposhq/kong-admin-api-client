@@ -3,10 +3,7 @@ const axios = require('axios');
 function Kong(opts) {
   if (!(this instanceof Kong)) { return new Kong(); }
 
-  this.adminAPIHost = opts.adminAPIHost || 'http://localhost';
-  this.adminAPIPort = opts.adminAPIPort || '8001';
-  this.adminAPIPath = opts.adminAPIPath || '';
-  this.kongAdminAPIURL = `${this.adminAPIHost}:${this.adminAPIPort}/${this.adminAPIPath}`;
+  this.adminAPIURL = opts.adminAPIURL || 'http://localhost:8001';
 }
 
 Kong.prototype.createConsumer = async function ({ username, customId }) {

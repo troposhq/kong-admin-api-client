@@ -5,7 +5,8 @@ function Kong(opts) {
 
   this.adminAPIHost = opts.adminAPIHost || 'http://localhost';
   this.adminAPIPort = opts.adminAPIPort || '8001';
-  this.kongAdminAPIURL = `${this.adminAPIHost}:${this.adminAPIPort}`;
+  this.adminAPIPath = opts.adminAPIPath || '';
+  this.kongAdminAPIURL = `${this.adminAPIHost}:${this.adminAPIPort}/${this.adminAPIPath}`;
 }
 
 Kong.prototype.createConsumer = async function ({ username, customId }) {

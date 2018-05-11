@@ -9,7 +9,7 @@ function Kong(opts) {
 Kong.prototype.createConsumer = async function ({ username, customId }) {
   const consumerResult = await axios({
     method: 'POST',
-    url: `${this.kongAdminAPIURL}/consumers`,
+    url: `${this.adminAPIURL}/consumers`,
     data: {
       custom_id: `${customId}`,
       username: `${username}`,
@@ -25,7 +25,7 @@ Kong.prototype.createConsumer = async function ({ username, customId }) {
 Kong.prototype.createJWTCredential = async function (consumerIDOrUsername) {
   const credential = await axios({
     method: 'POST',
-    url: `${this.kongAdminAPIURL}/consumers/${consumerIDOrUsername}/jwt`,
+    url: `${this.adminAPIURL}/consumers/${consumerIDOrUsername}/jwt`,
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
@@ -48,7 +48,7 @@ Kong.prototype.addService = async function ({
 }) {
   const service = await axios({
     method: 'POST',
-    url: `${this.kongAdminAPIURL}/services`,
+    url: `${this.adminAPIURL}/services`,
     headers: {
       'Content-Type': 'application/json',
     },
@@ -68,7 +68,7 @@ Kong.prototype.addRoute = async function ({
 }) {
   const route = await axios({
     method: 'POST',
-    url: `${this.kongAdminAPIURL}/routes`,
+    url: `${this.adminAPIURL}/routes`,
     headers: {
       'Content-Type': 'application/json',
     },

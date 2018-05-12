@@ -1,4 +1,5 @@
 const axios = require('axios');
+const errors = require('./errors');
 
 function Kong(opts) {
   if (!(this instanceof Kong)) { return new Kong(); }
@@ -10,6 +11,7 @@ function Kong(opts) {
  * 
  * @returns {Promise}
  */
+
 Kong.prototype.request = function (config) {
   return axios(config)
     .then(x => x.data)
@@ -17,15 +19,15 @@ Kong.prototype.request = function (config) {
       if (error.response) {
         // The request was made and the server responded with a status code
         // that falls out of the range of 2xx
-        throw new Error(JSON.stringify(error.response.data));
+        throw new errors.ServerError(error);
       } else if (error.request) {
         // The request was made but no response was received
         // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
         // http.ClientRequest in node.js
-        throw new Error('Did not receive response from server.');
+        throw new errors.NoResponseError(error);
       } else {
         // Something happened in setting up the request that triggered an Error
-        throw new Error(error.message);
+        throw new errors.RequestError(error);
       }
     });
 };

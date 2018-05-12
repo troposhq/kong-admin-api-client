@@ -8,11 +8,11 @@ function Kong(opts) {
 }
 
 /**
- * 
+ *
  * @returns {Promise}
  */
 
-Kong.prototype.request = function (config) {
+Kong.prototype.request = function request(config) {
   return axios(config)
     .then(x => x.data)
     .catch((error) => {
@@ -32,7 +32,11 @@ Kong.prototype.request = function (config) {
     });
 };
 
-Kong.prototype.createConsumer = function ({ username, customId }) {
+//
+// Consumer Object
+//
+
+Kong.prototype.createConsumer = function createConsumer({ username, customId }) {
   return this.request({
     method: 'POST',
     url: `${this.adminAPIURL}/consumers`,
@@ -44,9 +48,23 @@ Kong.prototype.createConsumer = function ({ username, customId }) {
       'Content-Type': 'application/json',
     },
   });
-}
+};
 
-Kong.prototype.createJWTCredential = function (consumerIDOrUsername) {
+Kong.prototype.getConsumer = function getConsumer(usernameOrId) {
+  return this.request({
+    method: 'GET',
+    url: `${this.adminAPIURL}/consumers/${usernameOrId}`,
+  });
+};
+
+Kong.prototype.deleteConsumer = function deleteConsumer(usernameOrId) {
+  return this.request({
+    method: 'DELETE',
+    url: `${this.adminAPIURL}/consumers/${usernameOrId}`,
+  });
+};
+
+Kong.prototype.createJWTCredential = function createJWTCredential(consumerIDOrUsername) {
   return this.request({
     method: 'POST',
     url: `${this.adminAPIURL}/consumers/${consumerIDOrUsername}/jwt`,
@@ -54,18 +72,22 @@ Kong.prototype.createJWTCredential = function (consumerIDOrUsername) {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
   });
-}
+};
 
-Kong.prototype.addService = function ({
+//
+// Service Object
+//
+
+Kong.prototype.createService = function createService({ /* eslint-disable camelcase */
   name,
   protocol,
   host,
   port,
   path,
-  retries,
-  connect_timeout,
-  write_timeout,
-  read_timeout,
+  retries = 5,
+  connect_timeout = 60000, // milliseconds
+  write_timeout = 60000, // milliseconds,
+  read_timeout = 60000, // milliseconds,
   url,
 }) {
   return this.request({
@@ -74,10 +96,47 @@ Kong.prototype.addService = function ({
     headers: {
       'Content-Type': 'application/json',
     },
+    data: {
+      name,
+      protocol,
+      host,
+      port,
+      path,
+      retries,
+      connect_timeout,
+      write_timeout,
+      read_timeout,
+      url,
+    },
   });
-}
+};
 
-Kong.prototype.addRoute = function ({
+Kong.prototype.getService = function getService({ nameOrId, routeId }) {
+  if (nameOrId) {
+    return this.request({
+      method: 'GET',
+      url: `${this.adminAPIURL}/services/${nameOrId}`,
+    });
+  }
+
+  return this.request({
+    method: 'GET',
+    url: `${this.adminAPIURL}/routes/${routeId}/service`,
+  });
+};
+
+Kong.prototype.deleteService = function deleteService(nameOrId) {
+  return this.request({
+    method: 'DELETE',
+    url: `${this.adminAPIURL}/services/${nameOrId}`,
+  });
+};
+
+//
+// Route Object
+//
+
+Kong.prototype.addRoute = function addRoute({ /* eslint-disable camelcase */
   protocols,
   methods,
   hosts,
@@ -92,7 +151,16 @@ Kong.prototype.addRoute = function ({
     headers: {
       'Content-Type': 'application/json',
     },
+    data: {
+      protocols,
+      methods,
+      hosts,
+      paths,
+      strip_path,
+      preserve_host,
+      service,
+    },
   });
-}
+};
 
 module.exports = Kong;

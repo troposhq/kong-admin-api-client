@@ -6,8 +6,32 @@ function Kong(opts) {
   this.adminAPIURL = opts.adminAPIURL || 'http://localhost:8001';
 }
 
+/**
+ * 
+ * @returns {Promise}
+ */
+Kong.prototype.request = function (config) {
+  return axios(config)
+    .then(x => x.data)
+    .catch((error) => {
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        throw new Error(JSON.stringify(error.response.data));
+      } else if (error.request) {
+        // The request was made but no response was received
+        // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+        // http.ClientRequest in node.js
+        throw new Error('Did not receive response from server.');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        throw new Error(error.message);
+      }
+    });
+};
+
 Kong.prototype.createConsumer = async function ({ username, customId }) {
-  const consumerResult = await axios({
+  const consumerResult = await this.request({
     method: 'POST',
     url: `${this.adminAPIURL}/consumers`,
     data: {
@@ -23,7 +47,7 @@ Kong.prototype.createConsumer = async function ({ username, customId }) {
 }
 
 Kong.prototype.createJWTCredential = async function (consumerIDOrUsername) {
-  const credential = await axios({
+  const credential = await this.request({
     method: 'POST',
     url: `${this.adminAPIURL}/consumers/${consumerIDOrUsername}/jwt`,
     headers: {
@@ -46,7 +70,7 @@ Kong.prototype.addService = async function ({
   read_timeout,
   url,
 }) {
-  const service = await axios({
+  const service = await this.request({
     method: 'POST',
     url: `${this.adminAPIURL}/services`,
     headers: {
@@ -66,7 +90,7 @@ Kong.prototype.addRoute = async function ({
   preserve_host,
   service,
 }) {
-  const route = await axios({
+  const route = await this.request({
     method: 'POST',
     url: `${this.adminAPIURL}/routes`,
     headers: {

@@ -32,8 +32,8 @@ Kong.prototype.request = function (config) {
     });
 };
 
-Kong.prototype.createConsumer = async function ({ username, customId }) {
-  const consumerResult = await this.request({
+Kong.prototype.createConsumer = function ({ username, customId }) {
+  return this.request({
     method: 'POST',
     url: `${this.adminAPIURL}/consumers`,
     data: {
@@ -43,24 +43,20 @@ Kong.prototype.createConsumer = async function ({ username, customId }) {
     headers: {
       'Content-Type': 'application/json',
     },
-  }).then(x => x.data);
-
-  return consumerResult;
+  });
 }
 
-Kong.prototype.createJWTCredential = async function (consumerIDOrUsername) {
-  const credential = await this.request({
+Kong.prototype.createJWTCredential = function (consumerIDOrUsername) {
+  return this.request({
     method: 'POST',
     url: `${this.adminAPIURL}/consumers/${consumerIDOrUsername}/jwt`,
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
-  }).then(x => x.data);
-
-  return credential;
+  });
 }
 
-Kong.prototype.addService = async function ({
+Kong.prototype.addService = function ({
   name,
   protocol,
   host,
@@ -72,18 +68,16 @@ Kong.prototype.addService = async function ({
   read_timeout,
   url,
 }) {
-  const service = await this.request({
+  return this.request({
     method: 'POST',
     url: `${this.adminAPIURL}/services`,
     headers: {
       'Content-Type': 'application/json',
     },
-  }).then(x => x.data);
-
-  return service;
+  });
 }
 
-Kong.prototype.addRoute = async function ({
+Kong.prototype.addRoute = function ({
   protocols,
   methods,
   hosts,
@@ -92,15 +86,13 @@ Kong.prototype.addRoute = async function ({
   preserve_host,
   service,
 }) {
-  const route = await this.request({
+  return this.request({
     method: 'POST',
     url: `${this.adminAPIURL}/routes`,
     headers: {
       'Content-Type': 'application/json',
     },
-  }).then(x => x.data);
-
-  return route;
+  });
 }
 
 module.exports = Kong;

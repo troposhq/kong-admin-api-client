@@ -1,10 +1,15 @@
 const axios = require('axios');
 const errors = require('./errors');
 
+// removed all keys from an object that are undefined, null, or ''
 function omitEmpty(obj) {
   return Object.keys(obj).reduce((p, c) => {
-    p[c] = obj[c];
-    return p;
+    const r = { ...p };
+    if (obj[c] !== undefined && obj[c] !== null && obj[c] !== '') {
+      r[c] = obj[c];
+    }
+
+    return r;
   }, {});
 }
 

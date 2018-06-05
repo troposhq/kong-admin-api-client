@@ -7,7 +7,7 @@ services:
     environment: 
       POSTGRES_USER: kong
       POSTGRES_PASSWORD: supersecret
-      POSTGRES_DB: dev
+      POSTGRES_DB: testing
     ports:
       - 5432:5432
 
@@ -28,7 +28,7 @@ services:
       KONG_DATABASE: postgres
       KONG_PG_HOST: tropos-local-postgres-9.6.8
       KONG_PG_USER: kong
-      KONG_PG_DATABASE: dev
+      KONG_PG_DATABASE: postgres
       KONG_PG_PASSWORD: supersecret
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_PROXY_ERROR_LOG: /dev/stdout
@@ -48,7 +48,7 @@ services:
       KONG_PG_HOST: tropos-local-postgres-9.6.8
       KONG_PG_USER: kong
       KONG_PG_PASSWORD: supersecret
-      KONG_PG_DATABASE: dev
+      KONG_PG_DATABASE: postgres
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_PROXY_ERROR_LOG: /dev/stdout
       KONG_ADMIN_ACCESS_LOG: /dev/stdout

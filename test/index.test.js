@@ -89,7 +89,7 @@ describe('Kong Admin API Client', () => {
       });
     });
 
-    describe('#addService', () => {
+    describe('#getService', () => {
       it('should get service by name', async () => {
         const result = await client.getService({
           nameOrId: 'my_service',
@@ -111,8 +111,23 @@ describe('Kong Admin API Client', () => {
 
     describe('#listServices', () => {
       it('should list services', async () => {
+        // check the previously added service is there
         const result = await client.listServices();
         assert.equal(result.data.length, 1);
+
+        // add some more services
+        await client.addService({
+          name: 'service1',
+          url: 'https://jsonplaceholder.typicode.com/posts/1',
+        });
+
+        await client.addService({
+          name: 'service2',
+          url: 'https://jsonplaceholder.typicode.com/posts/1',
+        });
+
+        const newResult = await client.listServices();
+        assert.equal(newResult.data.length, 3);
       });
     });
 

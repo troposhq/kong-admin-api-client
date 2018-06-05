@@ -1,4 +1,3 @@
-const axios = require('axios');
 const { assert } = require('chai');
 const Client = require('../src/client');
 const errors = require('../src/errors');

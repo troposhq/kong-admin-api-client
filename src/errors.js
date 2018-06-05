@@ -6,13 +6,13 @@ function ServerError(error) {
   this.status = error.response.status;
 }
 
-ServerError.prototype.toJSON = function () {
+ServerError.prototype.toJSON = function toJSON() {
   return {
     data: this.data,
     headers: this.headers,
     status: this.status,
   };
-}
+};
 
 function NoResponseError(error) {
   Error.captureStackTrace(this, this.constructor);
@@ -20,11 +20,11 @@ function NoResponseError(error) {
   this.request = error.request;
 }
 
-NoResponseError.prototype.toJSON = function () {
+NoResponseError.prototype.toJSON = function toJSON() {
   return {
     request: this.request,
   };
-}
+};
 
 function RequestError(error) {
   Error.captureStackTrace(this, this.constructor);
@@ -32,11 +32,11 @@ function RequestError(error) {
   this.message = error.message;
 }
 
-RequestError.prototype.toJSON = function () {
+RequestError.prototype.toJSON = function toJSON() {
   return {
     message: this.message,
   };
-}
+};
 
 require('util').inherits(ServerError, Error);
 require('util').inherits(NoResponseError, Error);

@@ -90,6 +90,17 @@ Kong.prototype.getService = function getService({ nameOrId, routeId }) {
   });
 };
 
+Kong.prototype.listServices = function listServices({ next, size } = {}) {
+  return this.request({
+    method: 'GET',
+    url: `${this.adminAPIURL}/services/`,
+    params: omitEmpty({
+      next,
+      size,
+    }),
+  });
+};
+
 Kong.prototype.deleteService = function deleteService(nameOrId) {
   return this.request({
     method: 'DELETE',

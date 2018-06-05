@@ -89,6 +89,33 @@ describe('Kong Admin API Client', () => {
       });
     });
 
+    describe('#addService', () => {
+      it('should get service by name', async () => {
+        const result = await client.getService({
+          nameOrId: 'my_service',
+        });
+
+        assert.equal(result.name, 'my_service');
+        assert.equal(result.id, serviceId);
+      });
+
+      it('should get service by id', async () => {
+        const result = await client.getService({
+          nameOrId: serviceId,
+        });
+
+        assert.equal(result.name, 'my_service');
+        assert.equal(result.id, serviceId);
+      });
+    });
+
+    describe('#listServices', () => {
+      it('should list services', async () => {
+        const result = await client.listServices();
+        assert.equal(result.data.length, 1);
+      });
+    });
+
     describe('#deleteService', () => {
       it('should delete service', async () => {
         const result = await client.deleteService(serviceId);

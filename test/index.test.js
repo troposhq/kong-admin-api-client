@@ -44,7 +44,7 @@ describe('Kong Admin API Client', () => {
 
   describe('consumers', () => {
     const username = 'my_user';
-    const customId = 1;
+    const customId = '1';
 
     describe('#createConsumer', () => {
       it('should create a consumer', async () => {
@@ -77,9 +77,9 @@ describe('Kong Admin API Client', () => {
   describe('services', () => {
     let serviceId;
 
-    describe('#createService', () => {
-      it('should create service', async () => {
-        const result = await client.createService({
+    describe('#addService', () => {
+      it('should add service', async () => {
+        const result = await client.addService({
           name: 'my_service',
           url: 'https://jsonplaceholder.typicode.com/posts/1',
         });

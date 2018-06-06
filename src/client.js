@@ -13,6 +13,12 @@ function omitEmpty(obj) {
   }, {});
 }
 
+/**
+ *
+ * @param {Object} opts
+ * @param {String} opts.adminAPIURL URL to the Kong Admin API
+ */
+
 function Kong(opts) {
   if (!(this instanceof Kong)) { return new Kong(); }
 
@@ -24,7 +30,8 @@ function Kong(opts) {
  * @returns {Promise}
  */
 
-Kong.prototype.request = function request(config) {
+Kong.prototype.request = function request(c) {
+  const config = { ...c, baseURL: this.adminAPIURL };
   return axios(config)
     .then(x => x.data)
     .catch((error) => {
@@ -44,9 +51,7 @@ Kong.prototype.request = function request(config) {
     });
 };
 
-//
-// Service Object
-//
+// Services
 
 Kong.prototype.addService = function addService({ /* eslint-disable camelcase */
   name,
@@ -62,7 +67,7 @@ Kong.prototype.addService = function addService({ /* eslint-disable camelcase */
 }) {
   return this.request({
     method: 'POST',
-    url: `${this.adminAPIURL}/services`,
+    url: '/services',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -81,24 +86,32 @@ Kong.prototype.addService = function addService({ /* eslint-disable camelcase */
   });
 };
 
+/**
+ * Gets a service either by it's name/id or gets a service associated with a route id.
+ *
+ * @param {Object} params
+ * @param {String} [params.nameOrId] A service's name or id. Semi-optional. One of nameOrId or routeId must be specified.
+ * @param {String} [params.routeId] A route id. Will get the service associated with the route. Semi-optional. One of nameOrId or routeId must be specified.
+ */
+
 Kong.prototype.getService = function getService({ nameOrId, routeId }) {
   if (nameOrId) {
     return this.request({
       method: 'GET',
-      url: `${this.adminAPIURL}/services/${nameOrId}`,
+      url: `/services/${nameOrId}`,
     });
   }
 
   return this.request({
     method: 'GET',
-    url: `${this.adminAPIURL}/routes/${routeId}/service`,
+    url: `/routes/${routeId}/service`,
   });
 };
 
 Kong.prototype.listServices = function listServices({ offset, size } = {}) {
   return this.request({
     method: 'GET',
-    url: `${this.adminAPIURL}/services`,
+    url: '/services',
     params: omitEmpty({
       size,
       offset,
@@ -106,16 +119,145 @@ Kong.prototype.listServices = function listServices({ offset, size } = {}) {
   });
 };
 
-Kong.prototype.deleteService = function deleteService(nameOrId) {
+Kong.prototype.updateService = function updateService(serviceId, { /* eslint-disable camelcase */
+  name,
+  protocol,
+  host,
+  port,
+  path,
+  retries,
+  connect_timeout, // milliseconds
+  write_timeout, // milliseconds,
+  read_timeout, // milliseconds,
+  url,
+}) {
   return this.request({
-    method: 'DELETE',
-    url: `${this.adminAPIURL}/services/${nameOrId}`,
+    method: 'PATCH',
+    url: `/services/${serviceId}`,
+    data: omitEmpty({
+      name,
+      protocol,
+      host,
+      port,
+      path,
+      retries,
+      connect_timeout,
+      write_timeout,
+      read_timeout,
+      url,
+    }),
   });
 };
 
-//
-// Consumer Object
-//
+Kong.prototype.deleteService = function deleteService(nameOrId) {
+  return this.request({
+    method: 'DELETE',
+    url: `/services/${nameOrId}`,
+  });
+};
+
+// Routes
+
+Kong.prototype.addRoute = function addRoute({ /* eslint-disable camelcase */
+  protocols,
+  methods,
+  hosts,
+  paths,
+  strip_path,
+  preserve_host,
+  serviceId,
+}) {
+  return this.request({
+    method: 'POST',
+    url: '/routes',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: omitEmpty({
+      protocols,
+      methods,
+      hosts,
+      paths,
+      strip_path,
+      preserve_host,
+      service: {
+        id: serviceId,
+      },
+    }),
+  });
+};
+
+Kong.prototype.getRoute = function getRoute(id) {
+  return this.request({
+    method: 'GET',
+    url: `/routes/${id}`,
+  });
+};
+
+Kong.prototype.listRoutes = function listRoutes({ serviceNameOrID, offset, size } = {}) {
+  if (serviceNameOrID) {
+    return this.request({
+      method: 'GET',
+      url: `/services/${serviceNameOrID}/routes`,
+      params: omitEmpty({
+        size,
+        offset,
+      }),
+    });
+  }
+
+  return this.request({
+    method: 'GET',
+    url: '/routes',
+    params: omitEmpty({
+      size,
+      offset,
+    }),
+  });
+};
+
+Kong.prototype.updateRoute = function updateRoute(id, { /* eslint-disable camelcase */
+  protocols,
+  methods,
+  hosts,
+  paths,
+  strip_path,
+  preserve_host,
+  serviceId,
+}) {
+  const b = omitEmpty({
+    protocols,
+    methods,
+    hosts,
+    paths,
+    strip_path,
+    preserve_host,
+  });
+
+  if (serviceId) {
+    b.service = {
+      id: serviceId,
+    };
+  }
+
+  return this.request({
+    method: 'PATCH',
+    url: `/routes/${id}`,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: b,
+  });
+};
+
+Kong.prototype.deleteRoute = function deleteRoute(id) {
+  return this.request({
+    method: 'DELETE',
+    url: `/routes/${id}`,
+  });
+};
+
+// Consumers
 
 /**
  *
@@ -127,7 +269,7 @@ Kong.prototype.deleteService = function deleteService(nameOrId) {
 Kong.prototype.createConsumer = function createConsumer({ username, customId }) {
   return this.request({
     method: 'POST',
-    url: `${this.adminAPIURL}/consumers`,
+    url: '/consumers',
     data: omitEmpty({
       custom_id: customId,
       username,
@@ -141,54 +283,41 @@ Kong.prototype.createConsumer = function createConsumer({ username, customId }) 
 Kong.prototype.getConsumer = function getConsumer(usernameOrId) {
   return this.request({
     method: 'GET',
-    url: `${this.adminAPIURL}/consumers/${usernameOrId}`,
+    url: `/consumers/${usernameOrId}`,
   });
 };
+
+Kong.prototype.listConsumers = function listConsumers({ offset, size } = {}) {
+  return this.request({
+    method: 'GET',
+    url: '/consumers',
+    params: omitEmpty({
+      size,
+      offset,
+    }),
+  });
+};
+
+// Kong.prototype.updateConsumer = function updateConsumer(usernameOrId) {
+//   return this.request({
+//     method: 'PATCH',
+//     url: `/consumers/${usernameOrId}`,
+//   });
+// };
 
 Kong.prototype.deleteConsumer = function deleteConsumer(usernameOrId) {
   return this.request({
     method: 'DELETE',
-    url: `${this.adminAPIURL}/consumers/${usernameOrId}`,
+    url: `/consumers/${usernameOrId}`,
   });
 };
 
 Kong.prototype.createJWTCredential = function createJWTCredential(consumerIDOrUsername) {
   return this.request({
     method: 'POST',
-    url: `${this.adminAPIURL}/consumers/${consumerIDOrUsername}/jwt`,
+    url: `/consumers/${consumerIDOrUsername}/jwt`,
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-    },
-  });
-};
-
-//
-// Route Object
-//
-
-Kong.prototype.addRoute = function addRoute({ /* eslint-disable camelcase */
-  protocols,
-  methods,
-  hosts,
-  paths,
-  strip_path,
-  preserve_host,
-  service,
-}) {
-  return this.request({
-    method: 'POST',
-    url: `${this.adminAPIURL}/routes`,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    data: {
-      protocols,
-      methods,
-      hosts,
-      paths,
-      strip_path,
-      preserve_host,
-      service,
     },
   });
 };

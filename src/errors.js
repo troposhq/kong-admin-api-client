@@ -1,7 +1,7 @@
 function ServerError(error) {
   Error.captureStackTrace(this, this.constructor);
   this.name = this.constructor.name;
-  this.message = `Server responded with status ${error.response.status}: ${error.response.data.message}`;
+  this.message = `Server responded with status ${error.response.status} ${error.response.statusText}`;
   this.data = error.response.data;
   this.headers = error.response.headers;
   this.status = error.response.status;

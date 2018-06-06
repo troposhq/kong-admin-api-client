@@ -4,14 +4,10 @@ dev:
 	docker-compose up -d
 
 reset-dev:
-	docker-compose down && \
-	$(MAKE) dev
+	docker-compose down
 
 test:
-	$(MAKE) reset-test && \
-	docker-compose -f docker-compose.test.yml up -d && \
+	$(MAKE) reset-dev && \
+	$(MAKE) dev && \
 	sleep 10 && \
 	npm test
-
-reset-test:
-	docker-compose -f docker-compose.test.yml down

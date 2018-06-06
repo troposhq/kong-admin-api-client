@@ -135,7 +135,7 @@ describe('Kong Admin API Client', () => {
         // and try to paginate through them
         const result = await client.listServices({ size: 2 });
         assert.equal(result.data.length, 2);
-        
+
         const newResult = await client.listServices({ offset: result.offset });
         assert.equal(newResult.data.length, 1);
       });

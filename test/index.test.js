@@ -129,6 +129,16 @@ describe('Kong Admin API Client', () => {
         const newResult = await client.listServices();
         assert.equal(newResult.data.length, 3);
       });
+
+      it('should paginate services', async () => {
+        // there should be 3 total services, let's get 2 at a time
+        // and try to paginate through them
+        const result = await client.listServices({ size: 2 });
+        assert.equal(result.data.length, 2);
+        
+        const newResult = await client.listServices({ offset: result.offset });
+        assert.equal(newResult.data.length, 1);
+      });
     });
 
     describe('#deleteService', () => {

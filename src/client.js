@@ -95,13 +95,13 @@ Kong.prototype.getService = function getService({ nameOrId, routeId }) {
   });
 };
 
-Kong.prototype.listServices = function listServices({ next, size } = {}) {
+Kong.prototype.listServices = function listServices({ offset, size } = {}) {
   return this.request({
     method: 'GET',
-    url: `${this.adminAPIURL}/services/`,
+    url: `${this.adminAPIURL}/services`,
     params: omitEmpty({
-      next,
       size,
+      offset,
     }),
   });
 };

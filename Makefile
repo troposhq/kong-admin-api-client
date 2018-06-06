@@ -8,10 +8,10 @@ reset-dev:
 	$(MAKE) dev
 
 test:
+	$(MAKE) reset-test && \
 	docker-compose -f docker-compose.test.yml up -d && \
-	sleep 5 && \
-	npm test && \
-	$(MAKE) reset-test
+	sleep 10 && \
+	npm test
 
 reset-test:
 	docker-compose -f docker-compose.test.yml down

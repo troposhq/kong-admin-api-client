@@ -9,5 +9,5 @@ reset-dev:
 test:
 	$(MAKE) reset-dev && \
 	$(MAKE) dev && \
-	sleep 10 && \
+	sleep 7 && \
 	npm test

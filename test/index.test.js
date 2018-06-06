@@ -253,7 +253,7 @@ describe('Kong Admin API Client', () => {
         assert.equal(result.service.id, serviceId);
       });
 
-      it('should update route to use a nnew service', async () => {
+      it('should update route to use a new service', async () => {
         const service = await client.addService({
           name: 'new-service',
           url: 'http://localhost:8001',
@@ -284,6 +284,7 @@ describe('Kong Admin API Client', () => {
   });
 
   describe('consumers', () => {
+    let consumerId;
     const username = 'my_user';
     const customId = '1';
 
@@ -294,16 +295,36 @@ describe('Kong Admin API Client', () => {
           customId,
         });
 
+        consumerId = result.id;
         assert.equal(result.custom_id, `${customId}`);
         assert.equal(result.username, username);
       });
     });
 
     describe('#getConsumer', () => {
-      it('should get a consumer', async () => {
+      it('should get a consumer by id', async () => {
+        const result = await client.getConsumer(consumerId);
+        assert.equal(result.id, `${consumerId}`);
+        assert.equal(result.custom_id, `${customId}`);
+        assert.equal(result.username, username);
+      });
+
+      it('should get a consumer by username', async () => {
         const result = await client.getConsumer(username);
         assert.equal(result.custom_id, `${customId}`);
         assert.equal(result.username, username);
+      });
+    });
+
+    describe('#updateConsumer', () => {
+      it('should update consumer', async () => {
+        await client.updateConsumer(consumerId, {
+          custom_id: '5',
+        });
+
+        // get the consumer to make sure it updated
+        const result = await client.getConsumer(consumerId);
+        assert.equal(result.custom_id, '5');
       });
     });
 

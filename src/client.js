@@ -298,12 +298,16 @@ Kong.prototype.listConsumers = function listConsumers({ offset, size } = {}) {
   });
 };
 
-// Kong.prototype.updateConsumer = function updateConsumer(usernameOrId) {
-//   return this.request({
-//     method: 'PATCH',
-//     url: `/consumers/${usernameOrId}`,
-//   });
-// };
+Kong.prototype.updateConsumer = function updateConsumer(usernameOrId, { username, custom_id }) {
+  return this.request({
+    method: 'PATCH',
+    url: `/consumers/${usernameOrId}`,
+    data: omitEmpty({
+      username,
+      custom_id,
+    }),
+  });
+};
 
 Kong.prototype.deleteConsumer = function deleteConsumer(usernameOrId) {
   return this.request({

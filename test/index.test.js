@@ -1,144 +1,171 @@
 const { assert } = require('chai');
-const Client = require('../src/client');
+const Kong = require('../src/kong');
+const Resource = require('../src/resource');
+const Services = require('../src/services');
+const Routes = require('../src/routes');
+const Consumers = require('../src/consumers');
 const errors = require('../src/errors');
 
 describe('Kong Admin API Client', () => {
   const adminAPIURL = 'http://localhost:8001';
-  const client = new Client({
-    adminAPIURL,
-  });
 
-  describe('#request', () => {
-    it('should successfully create a request', async () => {
-      await client.request({
-        method: 'GET',
-        url: adminAPIURL,
+  const resource = new Resource({ adminAPIURL, resourceURL: '/services' }); // use the services resourceURL to check functionality
+  const services = new Services({ adminAPIURL, resourceURL: '/services' });
+  const routes = new Routes({ adminAPIURL, resourceURL: '/routes' });
+  const consumers = new Consumers({ adminAPIURL, resourceURL: '/consumers' });
+
+  describe('Resource', () => {
+    let service;
+
+    describe('#request', () => {
+      it('should successfully create a request', async () => {
+        await resource.request({
+          method: 'GET',
+          url: adminAPIURL,
+        });
+      });
+
+      it('should throw NoResponseError when request receives no response', async () => {
+        try {
+          await resource.request({
+            method: 'GET',
+            url: 'http://notfound.troposhq.com',
+          });
+          assert.fail('Should not get here.');
+        } catch (err) {
+          assert.isTrue(err instanceof errors.NoResponseError);
+        }
+      });
+
+      it('should throw ServerError when receiving error from server', async () => {
+        try {
+          await resource.request({
+            method: 'GET',
+            url: `${adminAPIURL}/notfound`,
+          });
+          assert.fail('Should not get here.');
+        } catch (err) {
+          assert.equal(err.status, 404);
+          assert.isTrue(err instanceof errors.ServerError);
+        }
       });
     });
 
-    it('should throw NoResponseError when request receives no response', async () => {
-      try {
-        await client.request({
-          method: 'GET',
-          url: 'http://notfound.troposhq.com',
-        });
-        assert.fail('Should not get here.');
-      } catch (err) {
-        assert.isTrue(err instanceof errors.NoResponseError);
-      }
-    });
-
-    it('should throw ServerError when receiving error from server', async () => {
-      try {
-        await client.request({
-          method: 'GET',
-          url: `${adminAPIURL}/notfound`,
-        });
-        assert.fail('Should not get here.');
-      } catch (err) {
-        assert.equal(err.status, 404);
-        assert.isTrue(err instanceof errors.ServerError);
-      }
-    });
-  });
-
-  describe('services', () => {
-    let serviceId;
-
-    describe('#addService', () => {
-      it('should add service', async () => {
-        const result = await client.addService({
+    describe('#create', () => {
+      it('should create a resource', async () => {
+        const result = await resource.create({
           name: 'my_service',
           url: 'https://jsonplaceholder.typicode.com/posts/1',
         });
         assert.equal(result.name, 'my_service');
-
-        serviceId = result.id;
+        service = result;
       });
     });
 
-    describe('#getService', () => {
-      it('should get service by name', async () => {
-        const result = await client.getService({
-          nameOrId: 'my_service',
-        });
-
-        assert.equal(result.name, 'my_service');
-        assert.equal(result.id, serviceId);
-      });
-
-      it('should get service by id', async () => {
-        const result = await client.getService({
-          nameOrId: serviceId,
-        });
-
-        assert.equal(result.name, 'my_service');
-        assert.equal(result.id, serviceId);
+    describe('#get', () => {
+      it('should get route by id', async () => {
+        const result = await resource.get(service.id);
+        assert.deepEqual(result, service);
       });
     });
 
-    describe('#listServices', () => {
-      it('should list services', async () => {
+    describe('#list', () => {
+      it('should list resources', async () => {
         // check the previously added service is there
-        const result = await client.listServices();
+        const result = await resource.list();
         assert.equal(result.data.length, 1);
 
         // add some more services
-        await client.addService({
+        await resource.create({
           name: 'service1',
           url: 'https://jsonplaceholder.typicode.com/posts/1',
         });
 
-        await client.addService({
+        await resource.create({
           name: 'service2',
           url: 'https://jsonplaceholder.typicode.com/posts/1',
         });
 
-        const newResult = await client.listServices();
+        const newResult = await resource.list();
         assert.equal(newResult.data.length, 3);
       });
 
-      it('should paginate services', async () => {
+      it('should paginate resources', async () => {
         // there should be 3 total services, let's get 2 at a time
         // and try to paginate through them
-        const result = await client.listServices({ size: 2 });
+        const result = await resource.list({ size: 2 });
         assert.equal(result.data.length, 2);
 
-        const newResult = await client.listServices({ offset: result.offset });
+        const newResult = await resource.list({ offset: result.offset });
         assert.equal(newResult.data.length, 1);
       });
     });
 
-    describe('#updateService', () => {
-      it('should update service', async () => {
-        await client.updateService(serviceId, {
+    describe('#update', () => {
+      it('should update resource', async () => {
+        await resource.update(service.id, {
           name: 'updated_service',
         });
 
         // get the service to make sure it updated
-        const result = await client.getService({
-          nameOrId: serviceId,
-        });
+        const result = await resource.get(service.id);
 
         assert.equal(result.name, 'updated_service');
-        assert.equal(result.id, serviceId);
+        assert.equal(result.id, service.id);
       });
     });
 
-    describe('#deleteService', () => {
-      it('should delete service', async () => {
-        const result = await client.deleteService(serviceId);
+    describe('#delete', () => {
+      it('should delete resource', async () => {
+        const result = await resource.delete(service.id);
         assert.equal(result, '');
       });
     });
   });
 
-  describe('routes', () => {
+  describe('Services', () => {
+    let serviceResponse;
+    const service = {
+      name: 'test_service',
+      url: 'https://jsonplaceholder.typicode.com/posts/1',
+    };
+
+    describe('#getService', () => {
+      before(async () => {
+        serviceResponse = await services.create(service);
+      });
+
+      it('should get service by name', async () => {
+        const result = await services.get({ nameOrID: serviceResponse.name });
+        assert.equal(result.name, serviceResponse.name);
+        assert.equal(result.id, serviceResponse.id);
+      });
+
+      it('should get service by id', async () => {
+        const result = await services.get({ nameOrID: serviceResponse.id });
+        assert.equal(result.name, serviceResponse.name);
+        assert.equal(result.id, serviceResponse.id);
+      });
+
+      it('should get service for route', async () => {
+        const route = await routes.create({
+          service: {
+            id: serviceResponse.id,
+          },
+          paths: ['/my-route'],
+        });
+        const result = await services.get({ routeID: route.id });
+        assert.equal(result.name, serviceResponse.name);
+        assert.equal(result.id, serviceResponse.id);
+      });
+    });
+  });
+
+  describe('Routes', () => {
     let serviceId;
-    let routeId;
 
     before(async () => {
-      const result = await client.addService({
+      const result = await services.create({
         name: 'serviceForRoute',
         url: 'http://localhost:8000',
       });
@@ -146,91 +173,68 @@ describe('Kong Admin API Client', () => {
       serviceId = result.id;
     });
 
-    describe('#addRoute', () => {
-      it('should add route', async () => {
-        const result = await client.addRoute({
-          serviceId,
-          paths: ['/my-route'],
-        });
-
-        assert.deepEqual(result.paths, ['/my-route']);
-        routeId = result.id;
-      });
-    });
-
-    describe('#getRoute', () => {
-      it('should get route by id', async () => {
-        const result = await client.getRoute(routeId);
-
-        assert.deepEqual(result.paths, ['/my-route']);
-        assert.equal(result.id, routeId);
-        assert.equal(result.service.id, serviceId);
-      });
-    });
-
-    describe('#listRoutes', () => {
+    describe('#list', () => {
       it('should list routes', async () => {
         // check the previously added route is there
-        const result = await client.listRoutes();
+        const result = await routes.list();
         assert.equal(result.data.length, 1);
 
         // add some more routes
         for (let index = 0; index < 3; index += 1) {
           // eslint-disable-next-line no-await-in-loop
-          await client.addRoute({
-            serviceId,
+          await routes.create({
+            service: { id: serviceId },
             paths: ['/my-route'],
           });
         }
 
-        const newResult = await client.listRoutes();
+        const newResult = await routes.list();
         assert.equal(newResult.data.length, 4);
       });
 
       it('should paginate routes', async () => {
         // there should be 4 total routes, let's get 3 at a time
         // and try to paginate through them
-        const result = await client.listRoutes({ size: 3 });
+        const result = await routes.list({ size: 3 });
         assert.equal(result.data.length, 3);
 
-        const newResult = await client.listRoutes({ offset: result.offset });
+        const newResult = await routes.list({ offset: result.offset });
         assert.equal(newResult.data.length, 1);
       });
 
-
       it('should list routes by service', async () => {
-        const service = await client.addService({
+        const service = await services.create({
           url: 'http://localhost:8001',
         });
 
-        await client.addRoute({
-          serviceId: service.id,
+        await routes.create({
+          service: { id: service.id },
           paths: ['/my-route'],
         });
 
-        const result = await client.listRoutes({ serviceNameOrID: service.id });
+        const result = await routes.list({ serviceNameOrID: service.id });
         assert.equal(result.data.length, 1);
       });
 
       it('should paginate routes by service', async () => {
-        const service = await client.addService({
+        const service = await services.create({
           url: 'http://localhost:8001',
         });
 
-        await client.addRoute({
-          serviceId: service.id,
+        await routes.create({
+          service: { id: service.id },
           paths: ['/my-route'],
         });
 
-        await client.addRoute({
-          serviceId: service.id,
+        await routes.create({
+          service: { id: service.id },
           paths: ['/my-route'],
         });
 
-        const result = await client.listRoutes({ serviceNameOrID: service.id, size: 1 });
+        const result = await routes.list({ serviceNameOrID: service.id, size: 1 });
         assert.equal(result.data.length, 1);
 
-        const next = await client.listRoutes({
+        const next = await routes.list({
           serviceNameOrID: service.id,
           size: 1,
           offset: result.offset,
@@ -239,100 +243,39 @@ describe('Kong Admin API Client', () => {
         assert.equal(next.next, null);
       });
     });
+  });
 
-    describe('#updateRoute', () => {
-      it('should update route', async () => {
-        await client.updateRoute(routeId, {
-          paths: ['/my-new-route'],
-        });
+  describe('Consumers', () => {
+    let consumer;
+    let credential;
+    const username = 'my_user';
+    const customId = '1';
 
-        // get the route to make sure it updated
-        const result = await client.getRoute(routeId);
-
-        assert.deepEqual(result.paths, ['/my-new-route']);
-        assert.equal(result.service.id, serviceId);
-      });
-
-      it('should update route to use a new service', async () => {
-        const service = await client.addService({
-          name: 'new-service',
-          url: 'http://localhost:8001',
-        });
-
-        await client.updateRoute(routeId, { serviceId: service.id });
-
-        // get the route to make sure it updated
-        const result = await client.getRoute(routeId);
-
-        assert.deepEqual(result.service.id, service.id);
-      });
+    before(async () => {
+      consumer = await consumers.create({ username, custom_id: customId });
     });
 
-    describe('#deleteRoute', () => {
-      it('should delete route', async () => {
-        const result = await client.deleteRoute(routeId);
-        assert.equal(result, '');
+    describe('#createCredential', () => {
+      it('should create a basic-auth credential', async () => {
+        credential = await consumers.createCredential(consumer.id, 'basic-auth', {
+          username: 'Aladdin',
+          password: 'OpenSesame',
+        });
+        assert.equal('Aladdin', credential.username);
+      });
 
-        try {
-          await client.getRoute(routeId);
-          assert.fail('Should not get here');
-        } catch (err) {
-          assert.equal(err.status, 404);
-        }
+      it('should create a jwt credential', async () => {
+        credential = await consumers.createCredential(consumer.id);
       });
     });
   });
 
-  describe('consumers', () => {
-    let consumerId;
-    const username = 'my_user';
-    const customId = '1';
-
-    describe('#createConsumer', () => {
-      it('should create a consumer', async () => {
-        const result = await client.createConsumer({
-          username,
-          customId,
-        });
-
-        consumerId = result.id;
-        assert.equal(result.custom_id, `${customId}`);
-        assert.equal(result.username, username);
-      });
-    });
-
-    describe('#getConsumer', () => {
-      it('should get a consumer by id', async () => {
-        const result = await client.getConsumer(consumerId);
-        assert.equal(result.id, `${consumerId}`);
-        assert.equal(result.custom_id, `${customId}`);
-        assert.equal(result.username, username);
-      });
-
-      it('should get a consumer by username', async () => {
-        const result = await client.getConsumer(username);
-        assert.equal(result.custom_id, `${customId}`);
-        assert.equal(result.username, username);
-      });
-    });
-
-    describe('#updateConsumer', () => {
-      it('should update consumer', async () => {
-        await client.updateConsumer(consumerId, {
-          custom_id: '5',
-        });
-
-        // get the consumer to make sure it updated
-        const result = await client.getConsumer(consumerId);
-        assert.equal(result.custom_id, '5');
-      });
-    });
-
-    describe('#deleteConsumer', () => {
-      it('should delete a consumer', async () => {
-        const result = await client.deleteConsumer(username);
-        assert.equal(result, '');
-      });
+  describe('Kong', () => {
+    it('should initialize with correct properties', () => {
+      const kong = new Kong({ adminAPIURL });
+      assert.instanceOf(kong.services, Services);
+      assert.instanceOf(kong.routes, Routes);
+      assert.instanceOf(kong.consumers, Consumers);
     });
   });
 });

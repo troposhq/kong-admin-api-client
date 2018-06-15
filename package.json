@@ -2,7 +2,7 @@
   "name": "@tropos/kong-admin-api-client",
   "version": "0.0.9",
   "description": "Library to interact with the Kong Admin API.",
-  "main": "src/client.js",
+  "main": "src/kong.js",
   "scripts": {
     "test": "mocha test/index.test.js"
   },

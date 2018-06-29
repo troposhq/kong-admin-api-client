@@ -1,4 +1,4 @@
-# Stripe Node.js Library
+# Kong Admin API Node.js Library
 
 The Kong Admin API Node library provides convenient access to the Kong Admin API from
 applications written in server-side JavaScript.

@@ -267,6 +267,27 @@ describe('Kong Admin API Client', () => {
       it('should create a jwt credential', async () => {
         credential = await consumers.createCredential(consumer.id);
       });
+
+      describe('after #createCredential', () => {
+        describe('#deleteCredential', () => {
+          it('should delete a credential', async () => {
+            await consumers.deleteCredential(consumer.id, credential.id);
+          });
+        });
+
+        describe('#listCredentials', () => {
+          it('should list jwt credentials', async () => {
+            let i = 0;
+            while (i < 10) {
+              // eslint-disable-next-line no-await-in-loop
+              await consumers.createCredential(consumer.id);
+              i += 1;
+            }
+            const credentials = await consumers.listCredentials(consumer.id);
+            assert.equal(credentials.data.length, 10);
+          });
+        });
+      });
     });
   });
 

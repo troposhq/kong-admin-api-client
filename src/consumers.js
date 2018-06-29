@@ -24,4 +24,25 @@ Consumers.prototype.createCredential = function createCredential(
   });
 };
 
+Consumers.prototype.deleteCredential = function deleteCredential(
+  consumerIDOrUsername,
+  credentialID,
+  type = 'jwt',
+) {
+  return this.request({
+    method: 'DELETE',
+    url: `${this.resourceURL}/${consumerIDOrUsername}/${type}/${credentialID}`,
+  });
+};
+
+Consumers.prototype.listCredentials = function listCredentials(
+  consumerIDOrUsername,
+  type = 'jwt',
+) {
+  return this.request({
+    method: 'GET',
+    url: `${this.resourceURL}/${consumerIDOrUsername}/${type}`,
+  });
+};
+
 module.exports = Consumers;

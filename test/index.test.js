@@ -219,18 +219,20 @@ describe('Kong Admin API Client', () => {
         },
         paths: ['/my-route'],
       });
-
-      // add some more routes
-      for (let index = 0; index < 3; index += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        await routes.create({
-          service: { id: service.id },
-          paths: ['/my-route'],
-        });
-      }
     });
 
     describe('#list', () => {
+      beforeEach(async () => {
+        // add some more routes
+        for (let index = 0; index < 3; index += 1) {
+          // eslint-disable-next-line no-await-in-loop
+          await routes.create({
+            service: { id: service.id },
+            paths: ['/my-route'],
+          });
+        }
+      });
+
       it('should list routes', async () => {
         const newResult = await routes.list();
         assert.equal(newResult.data.length, 4);
@@ -273,6 +275,25 @@ describe('Kong Admin API Client', () => {
         });
         assert.equal(next.data.length, 1);
         assert.equal(next.next, null);
+      });
+    });
+
+    describe('#addPlugin', () => {
+      it('should add plugin to a route', async () => {
+        // add the lambda plugin to the route
+        const plugin = await routes.addPlugin({
+          routeId: route.id,
+          name: 'aws-lambda',
+          config: {
+            aws_key: 'asdf',
+            aws_secret: 'asdf',
+            aws_region: 'us-east-1',
+            function_name: 'asdf',
+          },
+          enabled: true,
+        });
+
+        assert.equal(plugin.route_id, route.id);
       });
     });
   });

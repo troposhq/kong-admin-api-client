@@ -35,4 +35,21 @@ Routes.prototype.list = function list({ serviceNameOrID, offset, size } = {}) {
   });
 };
 
+/**
+ * Adds a plugin to a service
+ */
+
+Routes.prototype.addPlugin = function addPlugin({ routeId, name, config, enabled } = {}) {
+  return this.request({
+    method: 'POST',
+    url: `/plugins`,
+    data: omitEmpty({
+      route_id: routeId,
+      name,
+      config,
+      enabled,
+    }),
+  });
+};
+
 module.exports = Routes;

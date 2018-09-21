@@ -42,6 +42,14 @@ Resource.prototype.create = function create(body) {
   });
 };
 
+Resource.prototype.createOrUpdate = function update(nameOrId, body) {
+  return this.request({
+    method: 'PUT',
+    url: `${this.resourceURL}/${nameOrId}`,
+    data: omitEmpty(body),
+  });
+};
+
 Resource.prototype.get = function get(id) {
   return this.request({
     method: 'GET',

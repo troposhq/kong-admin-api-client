@@ -42,9 +42,8 @@ Routes.prototype.list = function list({ serviceNameOrID, offset, size } = {}) {
 Routes.prototype.addPlugin = function addPlugin({ routeId, name, config, enabled } = {}) {
   return this.request({
     method: 'POST',
-    url: `/plugins`,
+    url: `/routes/${routeId}/plugins`,
     data: omitEmpty({
-      route_id: routeId,
       name,
       config,
       enabled,

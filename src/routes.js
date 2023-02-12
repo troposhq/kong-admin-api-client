@@ -39,7 +39,13 @@ Routes.prototype.list = function list({ serviceNameOrID, offset, size } = {}) {
  * Adds a plugin to a service
  */
 
-Routes.prototype.addPlugin = function addPlugin({ routeId, name, config, enabled } = {}) {
+Routes.prototype.addPlugin = function addPlugin({
+  routeId,
+  name,
+  config,
+  enabled,
+  tags,
+} = {}) {
   return this.request({
     method: 'POST',
     url: `/routes/${routeId}/plugins`,
@@ -47,6 +53,7 @@ Routes.prototype.addPlugin = function addPlugin({ routeId, name, config, enabled
       name,
       config,
       enabled,
+      tags,
     }),
   });
 };

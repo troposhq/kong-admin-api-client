@@ -59,7 +59,7 @@ describe('Kong Admin API Client', () => {
         try {
           await resource.request({
             method: 'GET',
-            url: 'http://notfound.troposhq.com',
+            url: 'http://notfound.example.com/',
           });
           assert.fail('Should not get here.');
         } catch (err) {
@@ -293,7 +293,7 @@ describe('Kong Admin API Client', () => {
           enabled: true,
         });
 
-        assert.equal(plugin.route_id, route.id);
+        assert.equal(plugin.route.id, route.id);
       });
     });
   });
